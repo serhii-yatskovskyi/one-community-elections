@@ -1,9 +1,9 @@
 package org.bayaweaver.oce.administration.domain.model;
 
 public final class MemberId {
-    private final int value;
+    private final long value;
 
-    public MemberId(int value) {
+    public MemberId(long value) {
         this.value = value;
     }
 
@@ -21,6 +21,6 @@ public final class MemberId {
 
     @Override
     public int hashCode() {
-        return value;
+        return (int) value;
     }
 }

@@ -1,9 +1,9 @@
 package org.bayaweaver.oce.administration.domain.model;
 
 public final class CommunityId {
-    private final String value;
+    private final long value;
 
-    public CommunityId(String value) {
+    public CommunityId(long value) {
         this.value = value;
     }
 
@@ -16,11 +16,11 @@ public final class CommunityId {
             return false;
         }
         CommunityId that = (CommunityId) o;
-        return value.equals(that.value);
+        return value == that.value;
     }
 
     @Override
     public int hashCode() {
-        return value.hashCode();
+        return (int) value;
     }
 }
