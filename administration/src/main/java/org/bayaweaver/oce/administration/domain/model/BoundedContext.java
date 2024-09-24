@@ -3,7 +3,6 @@ package org.bayaweaver.oce.administration.domain.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
@@ -84,6 +83,14 @@ public class BoundedContext {
             this.members = new HashSet<>();
         }
 
+        private CommunityId id() {
+            return id;
+        }
+
+        private Iterable<MemberId> members() {
+            return members;
+        }
+
         public void registerMember(MemberId member) {
             for (Community community : communities) {
                 if (community.equals(this)) {
@@ -133,6 +140,10 @@ public class BoundedContext {
             return initiator;
         }
 
+        public boolean canceled() {
+            return canceled;
+        }
+
         public void complete(Iterable<MemberId> electedMembers, CommunityId communityId) {
             if (this.canceled) {
                 throw new IllegalArgumentException("A canceled election can not be completed.");
@@ -150,10 +161,6 @@ public class BoundedContext {
             for (MemberId member : electedMembers) {
                 this.electedMembers.add(member);
             }
-        }
-
-        public boolean canceled() {
-            return canceled;
         }
 
         private void cancel() {
