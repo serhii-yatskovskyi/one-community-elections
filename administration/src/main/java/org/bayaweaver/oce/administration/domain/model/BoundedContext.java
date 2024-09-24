@@ -107,7 +107,7 @@ public class BoundedContext {
                 return false;
             }
             Community that = (Community) o;
-            return Objects.equals(id, that.id);
+            return id.equals(that.id);
         }
 
         @Override
