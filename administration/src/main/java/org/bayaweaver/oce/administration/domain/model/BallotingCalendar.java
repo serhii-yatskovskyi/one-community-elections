@@ -1,16 +1,17 @@
 package org.bayaweaver.oce.administration.domain.model;
 
+import org.bayaweaver.oce.administration.util.Iterables;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
 public class BallotingCalendar {
     private static final BallotingCalendar instance = new BallotingCalendar();
 
     private final Collection<Election> elections;
-    private final Set<CommunityRegistry.Community> electionRequesters;
+    private final Set<CommunityId> electionRequesters;
 
     private BallotingCalendar() {
         this.elections = new ArrayList<>();
@@ -30,12 +31,21 @@ public class BallotingCalendar {
         throw new IllegalArgumentException("Election '" + id + "' is absent.");
     }
 
+    Iterable<Election> electionsOf(CommunityId community) {
+        Collection<Election> result = new ArrayList<>();
+        for (Election election : this.elections) {
+            if (election.community().equals(community)) {
+                result.add(election);
+            }
+        }
+        return result;
+    }
+
     public void initiateElection(ElectionId id, CommunityId communityId) {
-        CommunityRegistry.Community community = community(communityId);
-        if (this.electionRequesters.contains(community)) {
+        if (this.electionRequesters.contains(communityId)) {
             throw new IllegalArgumentException("Only one election can be initiated per community.");
         }
-        this.elections.add(new Election(id, community));
+        this.elections.add(new Election(id, communityId));
     }
 
     @Override
@@ -50,33 +60,41 @@ public class BallotingCalendar {
 
     public class Election {
         private final ElectionId id;
-        private final CommunityRegistry.Community initiator;
+        private final CommunityId initiator;
         private boolean canceled;
         private final Set<MemberId> electedMembers;
 
-        private Election(ElectionId id, CommunityRegistry.Community initiator) {
+        private Election(ElectionId id, CommunityId initiator) {
             this.id = id;
             this.initiator = initiator;
             this.canceled = false;
             this.electedMembers = new HashSet<>();
         }
 
-        private CommunityRegistry.Community community() {
+        CommunityId community() {
             return initiator;
         }
 
-        public void complete(Iterable<MemberId> electedMembers, CommunityId communityId) {
+        public boolean canceled() {
+            return canceled;
+        }
+
+        public void complete(
+                Iterable<MemberId> electedMembers,
+                CommunityId communityId,
+                CommunityProvider communityProvider) {
+
             if (this.canceled) {
                 throw new IllegalArgumentException("A canceled election can not be completed.");
             }
             if (!this.electedMembers.isEmpty()) {
                 throw new IllegalArgumentException("An election can be completed only once.");
             }
-            CommunityRegistry.Community community = BallotingCalendar.this.community(communityId);
-            if (!community.equals(initiator)) {
+            if (!communityId.equals(initiator)) {
                 throw new IllegalArgumentException("Only the community that initiated the election can complete it.");
             }
-            if (!community.members.containsAll(StreamSupport.stream(electedMembers.spliterator(), false).toList())) {
+            CommunityRegistry.Community community = communityProvider.community(communityId);
+            if (!Iterables.containsAll(community.members(), electedMembers)) {
                 throw new IllegalArgumentException("Only members of a community can be elected.");
             }
             for (MemberId member : electedMembers) {
@@ -84,11 +102,7 @@ public class BallotingCalendar {
             }
         }
 
-        public boolean canceled() {
-            return canceled;
-        }
-
-        private void cancel() {
+        void cancel() {
             BallotingCalendar.this.electionRequesters.remove(this.initiator);
             canceled = true;
         }

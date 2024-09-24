@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CommunityRegistry {
+public class CommunityRegistry implements CommunityProvider {
     private static final CommunityRegistry instance = new CommunityRegistry();
 
     private final Collection<Community> communities;
@@ -31,15 +31,10 @@ public class CommunityRegistry {
         this.communities.add(new Community(id));
     }
 
-    public void dissolveCommunity(CommunityId id) {
+    public CommunityDissolvedEvent dissolveCommunity(CommunityId id) {
         Community community = community(id);
         this.communities.remove(community);
-        for (BallotingCalendar.Election election : this.elections) {
-            if (election.community().equals(community)) {
-                election.cancel();
-            }
-        }
-        this.electionRequesters.remove(community);
+        return new CommunityDissolvedEvent(id);
     }
     
     public class Community {
@@ -49,6 +44,14 @@ public class CommunityRegistry {
         private Community(CommunityId id) {
             this.id = id;
             this.members = new HashSet<>();
+        }
+
+        CommunityId id() {
+            return id;
+        }
+
+        Iterable<MemberId> members() {
+            return members;
         }
 
         public void registerMember(MemberId member) {
