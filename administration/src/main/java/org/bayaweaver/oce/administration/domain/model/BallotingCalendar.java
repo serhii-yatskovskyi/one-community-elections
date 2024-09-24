@@ -65,7 +65,14 @@ public class BallotingCalendar {
             return initiator;
         }
 
-        public void complete(Iterable<MemberId> electedMembers, CommunityId communityId) {
+        public boolean canceled() {
+            return canceled;
+        }
+
+        public void complete(
+                Iterable<MemberId> electedMembers,
+                CommunityId communityId) {
+
             if (this.canceled) {
                 throw new IllegalArgumentException("A canceled election can not be completed.");
             }
@@ -82,10 +89,6 @@ public class BallotingCalendar {
             for (MemberId member : electedMembers) {
                 this.electedMembers.add(member);
             }
-        }
-
-        public boolean canceled() {
-            return canceled;
         }
 
         private void cancel() {

@@ -51,6 +51,14 @@ public class CommunityRegistry {
             this.members = new HashSet<>();
         }
 
+        private CommunityId id() {
+            return id;
+        }
+
+        private Iterable<MemberId> members() {
+            return members;
+        }
+
         public void registerMember(MemberId member) {
             for (Community community : communities) {
                 if (community.equals(this)) {
