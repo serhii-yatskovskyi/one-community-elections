@@ -69,10 +69,7 @@ public class BallotingCalendar {
             return canceled;
         }
 
-        public void complete(
-                Iterable<MemberId> electedMembers,
-                CommunityId communityId) {
-
+        public void complete(Iterable<MemberId> electedMembers, CommunityId communityId) {
             if (this.canceled) {
                 throw new IllegalArgumentException("A canceled election can not be completed.");
             }
