@@ -13,7 +13,6 @@ public class BallotingCalendar {
     private final Set<CommunityRegistry.Community> electionRequesters;
 
     private BallotingCalendar() {
-        this.communities = new ArrayList<>();
         this.elections = new ArrayList<>();
         this.electionRequesters = new HashSet<>();
     }
