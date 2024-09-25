@@ -31,7 +31,7 @@ public class BallotingCalendar {
         throw new IllegalArgumentException("Election '" + id + "' is absent.");
     }
 
-    Iterable<Election> electionsOf(CommunityId community) {
+    public Iterable<Election> electionsOf(CommunityId community) {
         Collection<Election> result = new ArrayList<>();
         for (Election election : this.elections) {
             if (election.community().equals(community)) {
