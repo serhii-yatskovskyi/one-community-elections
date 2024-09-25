@@ -41,7 +41,7 @@ public class CommunityRegistry {
         }
         this.electionRequesters.remove(community);
     }
-    
+
     public class Community {
         private final CommunityId id;
         private final Set<MemberId> members;
@@ -51,11 +51,11 @@ public class CommunityRegistry {
             this.members = new HashSet<>();
         }
 
-        private CommunityId id() {
+        public CommunityId id() {
             return id;
         }
 
-        private Iterable<MemberId> members() {
+        public Iterable<MemberId> members() {
             return members;
         }
 

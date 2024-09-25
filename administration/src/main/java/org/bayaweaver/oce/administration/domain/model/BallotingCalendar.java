@@ -61,7 +61,11 @@ public class BallotingCalendar {
             this.electedMembers = new HashSet<>();
         }
 
-        private CommunityRegistry.Community community() {
+        public ElectionId id() {
+            return id;
+        }
+
+        public CommunityRegistry.Community community() {
             return initiator;
         }
 
@@ -80,7 +84,7 @@ public class BallotingCalendar {
             if (!community.equals(initiator)) {
                 throw new IllegalArgumentException("Only the community that initiated the election can complete it.");
             }
-            if (!community.members.containsAll(StreamSupport.stream(electedMembers.spliterator(), false).toList())) {
+            if (!Iterables.containsAll(community.members(), electedMembers)) {
                 throw new IllegalArgumentException("Only members of a community can be elected.");
             }
             for (MemberId member : electedMembers) {
