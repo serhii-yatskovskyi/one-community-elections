@@ -6,21 +6,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CommunityRegistry implements CommunityProvider {
-    private static final CommunityRegistry instance = new CommunityRegistry();
-
     private final Collection<Community> communities;
 
-    private CommunityRegistry() {
+    CommunityRegistry() {
         this.communities = new ArrayList<>();
-    }
-
-    public static CommunityRegistry instance() {
-        return instance;
     }
 
     public Community community(CommunityId id) {
         for (Community community : this.communities) {
-            if (community.id.equals(id)) {
+            if (community.id().equals(id)) {
                 return community;
             }
         }
@@ -31,10 +25,10 @@ public class CommunityRegistry implements CommunityProvider {
         this.communities.add(new Community(id));
     }
 
-    public CommunityDissolvedEvent dissolveCommunity(CommunityId id) {
+    public void dissolveCommunity(CommunityId id, EntitySynchronization sync) {
         Community community = community(id);
         this.communities.remove(community);
-        return new CommunityDissolvedEvent(id);
+        sync.trigger(new CommunityDissolvedEvent(id));
     }
     
     public class Community {

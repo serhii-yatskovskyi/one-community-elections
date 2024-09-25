@@ -5,24 +5,24 @@ import org.bayaweaver.oce.administration.util.Iterables;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Election {
+public class Election implements Entity {
     private final ElectionId id;
     private final CommunityId initiator;
     private boolean canceled;
     private final Set<MemberId> electedMembers;
 
-    private Election(ElectionId id, CommunityId initiator) {
+    Election(ElectionId id, CommunityId initiator) {
         this.id = id;
         this.initiator = initiator;
         this.canceled = false;
         this.electedMembers = new HashSet<>();
     }
 
-    ElectionId id() {
+    public ElectionId id() {
         return id;
     }
 
-    CommunityId community() {
+    public CommunityId community() {
         return initiator;
     }
 
@@ -49,9 +49,9 @@ public class Election {
         }
     }
 
-    void cancel() {
-        BallotingCalendar.this.electionRequesters.remove(this.initiator);
+    private ElectionCanceledEvent cancel() {
         canceled = true;
+        return new ElectionCanceledEvent(this);
     }
 
     @Override
@@ -69,5 +69,15 @@ public class Election {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    @Override
+    public void updateOn(Object o, EntitySynchronization sync) {
+        if (o instanceof CommunityDissolvedEvent event) {
+            if (event.community().equals(initiator)) {
+                ElectionCanceledEvent resultEvent = cancel();
+                sync.trigger(resultEvent);
+            }
+        }
     }
 }
