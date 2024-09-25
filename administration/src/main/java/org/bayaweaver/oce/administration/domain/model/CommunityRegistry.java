@@ -20,7 +20,7 @@ public class CommunityRegistry implements CommunityProvider {
 
     public Community community(CommunityId id) {
         for (Community community : this.communities) {
-            if (community.id.equals(id)) {
+            if (community.id().equals(id)) {
                 return community;
             }
         }
@@ -46,11 +46,11 @@ public class CommunityRegistry implements CommunityProvider {
             this.members = new HashSet<>();
         }
 
-        CommunityId id() {
+        public CommunityId id() {
             return id;
         }
 
-        Iterable<MemberId> members() {
+        public Iterable<MemberId> members() {
             return members;
         }
 

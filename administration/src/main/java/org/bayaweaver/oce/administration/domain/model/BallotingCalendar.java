@@ -24,7 +24,7 @@ public class BallotingCalendar {
 
     public Election election(ElectionId id) {
         for (Election election : this.elections) {
-            if (election.id.equals(id)) {
+            if (election.id().equals(id)) {
                 return election;
             }
         }
@@ -71,7 +71,11 @@ public class BallotingCalendar {
             this.electedMembers = new HashSet<>();
         }
 
-        CommunityId community() {
+        public ElectionId id() {
+            return id;
+        }
+
+        public CommunityId community() {
             return initiator;
         }
 
