@@ -1,10 +1,11 @@
 package org.bayaweaver.oce.administration.domain.model;
 
+import org.bayaweaver.oce.administration.util.Iterables;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
 public class BoundedContext {
     private static final BoundedContext instance = new BoundedContext();
@@ -25,7 +26,7 @@ public class BoundedContext {
 
     public Community community(CommunityId id) {
         for (Community community : this.communities) {
-            if (community.id.equals(id)) {
+            if (community.id().equals(id)) {
                 return community;
             }
         }
@@ -49,7 +50,7 @@ public class BoundedContext {
 
     public Election election(ElectionId id) {
         for (Election election : this.elections) {
-            if (election.id.equals(id)) {
+            if (election.id().equals(id)) {
                 return election;
             }
         }
@@ -83,11 +84,11 @@ public class BoundedContext {
             this.members = new HashSet<>();
         }
 
-        private CommunityId id() {
+        public CommunityId id() {
             return id;
         }
 
-        private Iterable<MemberId> members() {
+        public Iterable<MemberId> members() {
             return members;
         }
 
@@ -136,7 +137,11 @@ public class BoundedContext {
             this.electedMembers = new HashSet<>();
         }
 
-        private Community community() {
+        public ElectionId id() {
+            return id;
+        }
+
+        public Community community() {
             return initiator;
         }
 
@@ -155,7 +160,7 @@ public class BoundedContext {
             if (!community.equals(initiator)) {
                 throw new IllegalArgumentException("Only the community that initiated the election can complete it.");
             }
-            if (!community.members.containsAll(StreamSupport.stream(electedMembers.spliterator(), false).toList())) {
+            if (!Iterables.containsAll(community.members(), electedMembers)) {
                 throw new IllegalArgumentException("Only members of a community can be elected.");
             }
             for (MemberId member : electedMembers) {

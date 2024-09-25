@@ -16,7 +16,7 @@ public class DomainModelApiTest {
     @Test
     public void electionCanceled() {
         BoundedContext context = BoundedContext.instance();
-        var communityId = new CommunityId("A");
+        var communityId = new CommunityId(100);
         context.registerCommunity(communityId);
         var community = context.community(communityId);
         community.registerMember(new MemberId(1));
@@ -33,7 +33,7 @@ public class DomainModelApiTest {
     @Test
     public void completeElectionWithWrongMember() {
         BoundedContext context = BoundedContext.instance();
-        var communityId = new CommunityId("A");
+        var communityId = new CommunityId(100);
         context.registerCommunity(communityId);
         var community = context.community(communityId);
         community.registerMember(new MemberId(1));
