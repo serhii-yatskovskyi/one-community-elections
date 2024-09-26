@@ -8,20 +8,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class BoundedContext {
-    private static final BoundedContext instance = new BoundedContext();
-
     private final Collection<Community> communities;
     private final Collection<Election> elections;
-    private final Set<Community> electionRequesters;
+    private final Set<Community> electionInitiators;
 
-    private BoundedContext() {
+    BoundedContext() {
         this.communities = new ArrayList<>();
         this.elections = new ArrayList<>();
-        this.electionRequesters = new HashSet<>();
-    }
-
-    public static BoundedContext instance() {
-        return instance;
+        this.electionInitiators = new HashSet<>();
     }
 
     public Community community(CommunityId id) {
@@ -45,24 +39,28 @@ public class BoundedContext {
                 election.cancel();
             }
         }
-        this.electionRequesters.remove(community);
+        returnAvailabilityToInitiateElections(community);
     }
 
-    public Election election(ElectionId id) {
-        for (Election election : this.elections) {
-            if (election.id().equals(id)) {
-                return election;
-            }
-        }
-        throw new IllegalArgumentException("Election '" + id + "' is absent.");
+    public Iterable<Election> elections() {
+        return elections;
     }
 
     public void initiateElection(ElectionId id, CommunityId communityId) {
         Community community = community(communityId);
-        if (this.electionRequesters.contains(community)) {
+        if (this.electionInitiators.contains(community)) {
             throw new IllegalArgumentException("Only one election can be initiated per community.");
         }
+        suppressAvailabilityToInitiateElections(community);
         this.elections.add(new Election(id, community));
+    }
+
+    private void suppressAvailabilityToInitiateElections(Community community) {
+        this.electionInitiators.add(community);
+    }
+
+    private void returnAvailabilityToInitiateElections(Community community) {
+        this.electionInitiators.remove(community);
     }
 
     @Override
@@ -169,8 +167,8 @@ public class BoundedContext {
         }
 
         private void cancel() {
-            BoundedContext.this.electionRequesters.remove(this.initiator);
             canceled = true;
+            BoundedContext.this.returnAvailabilityToInitiateElections(initiator);
         }
 
         @Override

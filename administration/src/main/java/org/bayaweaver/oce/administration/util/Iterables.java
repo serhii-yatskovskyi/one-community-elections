@@ -1,10 +1,13 @@
 package org.bayaweaver.oce.administration.util;
 
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 public abstract class Iterables {
 
     private Iterables() {}
 
-    public static boolean containsAll(final Iterable<?> iterable, final Iterable<?> elements) {
+    public static <T> boolean containsAll(final Iterable<T> iterable, final Iterable<T> elements) {
         for (Object e2 : elements) {
             boolean contains = false;
             for (Object e1 : iterable) {
@@ -18,5 +21,9 @@ public abstract class Iterables {
             }
         }
         return true;
+    }
+
+    public static <T> Stream<T> stream(final Iterable<T> iterable) {
+        return StreamSupport.stream(iterable.spliterator(), false);
     }
 }

@@ -27,3 +27,4 @@ build/
 *.key
 *.crt
 tmp.md
+chronicles.md
