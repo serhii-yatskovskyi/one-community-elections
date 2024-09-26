@@ -25,12 +25,22 @@ public class CommunityRegistry implements CommunityProvider {
         this.communities.add(new Community(id));
     }
 
-    public void dissolveCommunity(CommunityId id, EntitySynchronization sync) {
+    public CommunityDissolvedEvent dissolveCommunity(CommunityId id) {
         Community community = community(id);
         this.communities.remove(community);
-        sync.trigger(new CommunityDissolvedEvent(id));
+        return new CommunityDissolvedEvent(id);
     }
-    
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        return 1;
+    }
+
     public class Community {
         private final CommunityId id;
         private final Set<MemberId> members;
@@ -40,11 +50,11 @@ public class CommunityRegistry implements CommunityProvider {
             this.members = new HashSet<>();
         }
 
-        CommunityId id() {
+        public CommunityId id() {
             return id;
         }
 
-        Iterable<MemberId> members() {
+        public Iterable<MemberId> members() {
             return members;
         }
 

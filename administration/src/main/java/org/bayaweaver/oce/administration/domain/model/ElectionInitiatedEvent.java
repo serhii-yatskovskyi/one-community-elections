@@ -1,19 +1,19 @@
 package org.bayaweaver.oce.administration.domain.model;
 
 public final class ElectionInitiatedEvent {
-    private final ElectionId id;
-    private final CommunityId community;
+    private final ElectionId election;
+    private final CommunityId initiator;
 
-    ElectionInitiatedEvent(ElectionId id, CommunityId community) {
-        this.id = id;
-        this.community = community;
+    ElectionInitiatedEvent(ElectionId election, CommunityId initiator) {
+        this.election = election;
+        this.initiator = initiator;
     }
 
-    ElectionId id() {
-        return id;
+    ElectionId election() {
+        return election;
     }
 
-    CommunityId community() {
-        return community;
+    CommunityId initiator() {
+        return initiator;
     }
 }

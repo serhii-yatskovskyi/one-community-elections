@@ -1,36 +1,35 @@
 package org.bayaweaver.oce.administration.application;
 
+import org.bayaweaver.oce.administration.domain.model.CommunityDissolvedEvent;
 import org.bayaweaver.oce.administration.domain.model.CommunityId;
 import org.bayaweaver.oce.administration.domain.model.CommunityProvider;
 import org.bayaweaver.oce.administration.domain.model.CommunityRegistry;
 import org.bayaweaver.oce.administration.domain.model.CommunityRegistryRepository;
 import org.bayaweaver.oce.administration.domain.model.Election;
-import org.bayaweaver.oce.administration.domain.model.ElectionCreator;
+import org.bayaweaver.oce.administration.domain.model.ElectionFactory;
 import org.bayaweaver.oce.administration.domain.model.ElectionId;
+import org.bayaweaver.oce.administration.domain.model.ElectionInitiatedEvent;
 import org.bayaweaver.oce.administration.domain.model.ElectionRepository;
 import org.bayaweaver.oce.administration.domain.model.ElectoralRegulation;
 import org.bayaweaver.oce.administration.domain.model.ElectoralRegulationRepository;
 import org.bayaweaver.oce.administration.domain.model.MemberId;
-import org.bayaweaver.oce.administration.domain.model.Entity;
-import org.bayaweaver.oce.administration.domain.model.EntitySynchronization;
-
-import java.util.Observable;
 
 public class Application {
-    private EntitySynchronization sync;
-    private ElectoralRegulationRepository electoralRegulationRepository;
-    private CommunityRegistryRepository communityRegistryRepository;
-    private ElectionRepository electionRepository;
+    private final EventBus eventBus;
+    private final ElectoralRegulationRepository electoralRegulationRepository;
+    private final CommunityRegistryRepository communityRegistryRepository;
+    private final ElectionRepository electionRepository;
 
-    public Application() {}
-
-    public void init() {
-        sync = new SimpleSynchronization();
+    public Application() {
+        eventBus = new EventBus();
         electoralRegulationRepository = new ElectoralRegulationRepository();
-        sync.involve(electoralRegulationRepository.get());
+        eventBus.subscribe(electoralRegulationRepository.get());
         communityRegistryRepository = new CommunityRegistryRepository();
         electionRepository = new ElectionRepository();
-        sync.involve(new ElectionCreator(electionRepository));
+        eventBus.subscribe(new ElectionRegulationEventHandler(
+                eventBus,
+                new ElectionFactory(),
+                electionRepository));
     }
 
     public void registerCommunity(CommunityId communityId) {
@@ -46,12 +45,14 @@ public class Application {
 
     public void dissolveCommunity(CommunityId communityId) {
         CommunityRegistry registry = communityRegistryRepository.get();
-        registry.dissolveCommunity(communityId, sync);
+        CommunityDissolvedEvent result = registry.dissolveCommunity(communityId);
+        eventBus.notifySubscribers(result);
     }
 
     public void initiateElection(ElectionId electionId, CommunityId communityId) {
         ElectoralRegulation regulation = electoralRegulationRepository.get();
-        regulation.initiateElection(electionId, communityId, sync);
+        ElectionInitiatedEvent result = regulation.initiateElection(electionId, communityId);
+        eventBus.notifySubscribers(result);
     }
 
     public void completeElection(CommunityId communityId, Iterable<MemberId> electedMembers) {
@@ -69,21 +70,5 @@ public class Application {
                 .findFirst()
                 .orElseThrow();
         return election.canceled();
-    }
-
-    public static class SimpleSynchronization extends Observable implements EntitySynchronization {
-
-        private SimpleSynchronization() {}
-
-        @Override
-        public void trigger(Object event) {
-            setChanged();
-            notifyObservers(event);
-        }
-
-        @Override
-        public void involve(Entity entity) {
-            addObserver((observable, event) -> entity.updateOn(event, (SimpleSynchronization) observable));
-        }
     }
 }

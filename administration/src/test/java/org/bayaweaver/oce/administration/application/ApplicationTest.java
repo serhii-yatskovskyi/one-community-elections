@@ -17,7 +17,6 @@ class ApplicationTest {
     @BeforeEach
     public void init() {
         application = new Application();
-        application.init();
     }
 
     @Test

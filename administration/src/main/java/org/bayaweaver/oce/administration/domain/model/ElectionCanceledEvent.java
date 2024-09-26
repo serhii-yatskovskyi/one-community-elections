@@ -1,13 +1,19 @@
 package org.bayaweaver.oce.administration.domain.model;
 
 public final class ElectionCanceledEvent {
-    private final Election election;
+    private final ElectionId election;
+    private final CommunityId community;
 
-    ElectionCanceledEvent(Election election) {
+    ElectionCanceledEvent(ElectionId election, CommunityId community) {
         this.election = election;
+        this.community = community;
     }
 
-    Election election() {
+    ElectionId election() {
         return election;
+    }
+
+    CommunityId community() {
+        return community;
     }
 }

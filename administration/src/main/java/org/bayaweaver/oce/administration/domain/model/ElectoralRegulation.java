@@ -10,12 +10,12 @@ public class ElectoralRegulation implements Entity {
         this.electionInitiators = new HashSet<>();
     }
 
-    public void initiateElection(ElectionId id, CommunityId communityId, EntitySynchronization sync) {
+    public ElectionInitiatedEvent initiateElection(ElectionId id, CommunityId communityId) {
         if (this.electionInitiators.contains(communityId)) {
             throw new IllegalArgumentException("Only one election can be initiated per community.");
         }
         suppressAvailabilityToInitiateElections(communityId);
-        sync.trigger(new ElectionInitiatedEvent(id, communityId));
+        return new ElectionInitiatedEvent(id, communityId);
     }
 
     private void suppressAvailabilityToInitiateElections(CommunityId community) {
@@ -37,9 +37,10 @@ public class ElectoralRegulation implements Entity {
     }
 
     @Override
-    public void updateOn(Object o, EntitySynchronization sync) {
-        if (o instanceof ElectionCanceledEvent event) {
-            returnAvailabilityToInitiateElections(event.election().community());
+    public Object updateOn(Object generalEvent) {
+        if (generalEvent instanceof ElectionCanceledEvent event) {
+            returnAvailabilityToInitiateElections(event.community());
         }
+        return null;
     }
 }
