@@ -12,38 +12,38 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ApplicationTest {
-    private Application application;
+    private Application app;
 
     @BeforeEach
     public void init() {
-        application = new Application();
+        app = new Application();
     }
 
     @Test
     public void electionCanceled() {
         var communityId = new CommunityId(100);
-        application.registerCommunity(communityId);
-        application.registerMember(new MemberId(1), communityId);
-        application.registerMember(new MemberId(2), communityId);
-        application.registerMember(new MemberId(3), communityId);
+        app.registerCommunity(communityId);
+        app.registerMember(new MemberId(1), communityId);
+        app.registerMember(new MemberId(2), communityId);
+        app.registerMember(new MemberId(3), communityId);
         var electionId = new ElectionId(1);
-        application.initiateElection(electionId, communityId);
-        application.completeElection(communityId, List.of(new MemberId(1), new MemberId(2)));
-        application.dissolveCommunity(communityId);
-        assertTrue(application.electionCanceled(electionId));
+        app.initiateElection(electionId, communityId);
+        app.completeElection(communityId, List.of(new MemberId(1), new MemberId(2)));
+        app.dissolveCommunity(communityId);
+        assertTrue(app.electionCanceled(electionId));
     }
 
     @Test
     public void completeElectionWithWrongMember() {
         var communityId = new CommunityId(100);
-        application.registerCommunity(communityId);
-        application.registerMember(new MemberId(1), communityId);
-        application.registerMember(new MemberId(2), communityId);
-        application.registerMember(new MemberId(3), communityId);
+        app.registerCommunity(communityId);
+        app.registerMember(new MemberId(1), communityId);
+        app.registerMember(new MemberId(2), communityId);
+        app.registerMember(new MemberId(3), communityId);
         var electionId = new ElectionId(1);
-        application.initiateElection(electionId, communityId);
+        app.initiateElection(electionId, communityId);
         assertThrows(
                 IllegalArgumentException.class,
-                () -> application.completeElection(communityId, List.of(new MemberId(4))));
+                () -> app.completeElection(communityId, List.of(new MemberId(4))));
     }
 }
