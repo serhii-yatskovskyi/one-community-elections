@@ -83,7 +83,7 @@ public class Application {
 
         @Override
         public void involve(Entity entity) {
-            addObserver((o, arg) -> entity.updateOn(arg, (SimpleSynchronization) o));
+            addObserver((observable, event) -> entity.updateOn(event, (SimpleSynchronization) observable));
         }
     }
 }
