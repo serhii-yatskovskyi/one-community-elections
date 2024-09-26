@@ -25,10 +25,10 @@ public class CommunityRegistry implements CommunityProvider {
         this.communities.add(new Community(id));
     }
 
-    public CommunityDissolvedEvent dissolveCommunity(CommunityId id) {
+    public void dissolveCommunity(CommunityId id, EventEmitter emitter) {
         Community community = community(id);
         this.communities.remove(community);
-        return new CommunityDissolvedEvent(id);
+        emitter.emit(new CommunityDissolvedEvent(id));
     }
 
     @Override

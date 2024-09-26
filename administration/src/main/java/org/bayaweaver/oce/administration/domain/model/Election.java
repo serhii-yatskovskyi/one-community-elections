@@ -49,9 +49,9 @@ public class Election implements Entity {
         }
     }
 
-    private ElectionCanceledEvent cancel() {
+    private void cancel(EventEmitter emitter) {
         canceled = true;
-        return new ElectionCanceledEvent(id, initiator);
+        emitter.emit(new ElectionCanceledEvent(id, initiator));
     }
 
     @Override
@@ -72,12 +72,11 @@ public class Election implements Entity {
     }
 
     @Override
-    public Object updateOn(Object generalEvent) {
+    public void updateOn(Object generalEvent, EventEmitter emitter) {
         if (generalEvent instanceof CommunityDissolvedEvent event) {
             if (event.community().equals(initiator)) {
-                return cancel();
+                cancel(emitter);
             }
         }
-        return null;
     }
 }

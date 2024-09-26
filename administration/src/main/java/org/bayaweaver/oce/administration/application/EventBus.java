@@ -1,28 +1,27 @@
 package org.bayaweaver.oce.administration.application;
 
 import org.bayaweaver.oce.administration.domain.model.Entity;
+import org.bayaweaver.oce.administration.domain.model.EventEmitter;
 
 import java.util.Observable;
 
-class EventBus extends Observable {
+class EventBus extends Observable implements EventEmitter {
 
     EventBus() {}
 
-    void notifySubscribers(Object event) {
-        setChanged();
-        notifyObservers(event);
-    }
-
     void subscribe(Entity entity) {
         addObserver((o, event) -> {
-            Object result = entity.updateOn(event);
-            if (result != null) {
-                notifySubscribers(result);
-            }
+            entity.updateOn(event, this);
         });
     }
 
     void subscribe(EventHandler handler) {
         addObserver((o, event) -> handler.handle(event));
+    }
+
+    @Override
+    public void emit(Object event) {
+        setChanged();
+        notifyObservers(event);
     }
 }

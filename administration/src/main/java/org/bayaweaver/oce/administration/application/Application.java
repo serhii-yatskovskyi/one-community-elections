@@ -45,14 +45,12 @@ public class Application {
 
     public void dissolveCommunity(CommunityId communityId) {
         CommunityRegistry registry = communityRegistryRepository.get();
-        CommunityDissolvedEvent result = registry.dissolveCommunity(communityId);
-        eventBus.notifySubscribers(result);
+        registry.dissolveCommunity(communityId, eventBus);
     }
 
     public void initiateElection(ElectionId electionId, CommunityId communityId) {
         ElectoralRegulation regulation = electoralRegulationRepository.get();
-        ElectionInitiatedEvent result = regulation.initiateElection(electionId, communityId);
-        eventBus.notifySubscribers(result);
+        regulation.initiateElection(electionId, communityId, eventBus);
     }
 
     public void completeElection(CommunityId communityId, Iterable<MemberId> electedMembers) {
