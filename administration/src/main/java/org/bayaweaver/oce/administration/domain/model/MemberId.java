@@ -1,8 +1,8 @@
 package org.bayaweaver.oce.administration.domain.model;
 
-public final class ElectionId extends Identifier {
+public final class MemberId extends Identifier {
 
-    public ElectionId(long value) {
+    public MemberId(long value) {
         super(value);
     }
 }
