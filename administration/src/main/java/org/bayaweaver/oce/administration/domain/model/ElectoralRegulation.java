@@ -10,18 +10,16 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class BoundedContext {
+public class ElectoralRegulation {
     private final Collection<Election> elections;
-    private final Collection<Congregation> congregations;
 
-    public BoundedContext() {
+    public ElectoralRegulation() {
         this.elections = new ArrayList<>();
-        this.congregations = new HashSet<>();
     }
 
     public void initiateElection(ElectionId id, CongregationId congregationId, Clock clock) {
         Year currentYear = Year.now(clock);
-        Congregation congregation = congregations.stream()
+        Community.Congregation congregation = congregations.stream()
                 .filter(c -> c.id.equals(congregationId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -36,29 +34,6 @@ public class BoundedContext {
         elections.add(e);
     }
 
-    public void registerCongregation(CongregationId id, Iterable<MemberId> members) {
-        Congregation congregation = new Congregation(id, members);
-        if (!congregations.add(congregation)) {
-            throw new IllegalArgumentException("Не может существовать нескольких общин с одинаковым идентификатором.");
-        }
-    }
-
-    public void dissolveCongregation(CongregationId id) {
-        Congregation congregation = congregations.stream()
-                .filter(c -> c.id.equals(id))
-                .findFirst()
-                .orElse(null);
-        if (congregation == null) {
-            return;
-        }
-        congregations.remove(congregation);
-        for (Election election : elections) {
-            if (election.initiator.equals(congregation)) {
-                election.close();
-            }
-        }
-    }
-
     public Optional<Election> election(ElectionId id) {
         return elections.stream()
                 .filter(e -> e.id.equals(id))
@@ -68,11 +43,11 @@ public class BoundedContext {
     public class Election {
         private final ElectionId id;
         private final Year year;
-        private final Congregation initiator;
+        private final Community.Congregation initiator;
         private final Set<MemberId> electedMembers;
         private boolean closed;
 
-        private Election(ElectionId id, Year year, Congregation initiator) {
+        private Election(ElectionId id, Year year, Community.Congregation initiator) {
             this.id = id;
             this.year = year;
             this.initiator = initiator;
@@ -87,7 +62,7 @@ public class BoundedContext {
             if (!this.electedMembers.isEmpty()) {
                 throw new IllegalArgumentException("Завершенные выборы не могут быть завершены повторно.");
             }
-            Congregation congregation = BoundedContext.this.congregations.stream()
+            Community.Congregation congregation = BoundedContext.this.congregations.stream()
                     .filter(c -> c.id.equals(congregationId))
                     .findFirst()
                     .orElse(null);
@@ -116,36 +91,6 @@ public class BoundedContext {
                 return false;
             }
             Election that = (Election) o;
-            return id.equals(that.id);
-        }
-
-        @Override
-        public int hashCode() {
-            return id.hashCode();
-        }
-    }
-
-    class Congregation {
-        private final CongregationId id;
-        private final Set<MemberId> members;
-
-        private Congregation(CongregationId id, Iterable<MemberId> members) {
-            this.id = id;
-            this.members = new HashSet<>();
-            for (MemberId member : members) {
-                this.members.add(member);
-            }
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            Congregation that = (Congregation) o;
             return id.equals(that.id);
         }
 
