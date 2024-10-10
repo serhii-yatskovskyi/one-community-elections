@@ -87,4 +87,18 @@ class BoundedContextTest {
                 IllegalArgumentException.class,
                 () -> c.election(electionId).get().complete(congregationId, List.of(member2)));
     }
+
+    @Test
+    void closeElectionOnCongregationDissolution() {
+        var c = new BoundedContext();
+        var congregationId = new CongregationId(100);
+        var member1 = new MemberId(1);
+        c.registerCongregation(congregationId, List.of(member1));
+        var electionId = new ElectionId(1);
+        c.initiateElection(electionId, congregationId, Clock.systemUTC());
+        c.dissolveCongregation(congregationId);
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> c.election(electionId).get().complete(congregationId, List.of(member1)));
+    }
 }
