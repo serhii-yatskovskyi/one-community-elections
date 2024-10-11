@@ -1,19 +1,21 @@
 package org.bayaweaver.oce.administration.domain.model.electoralregulation;
 
 import org.bayaweaver.oce.administration.domain.model.community.Community;
+import org.bayaweaver.oce.administration.domain.model.community.CongregationDissolvedEvent;
 import org.bayaweaver.oce.administration.domain.model.community.CongregationId;
 import org.bayaweaver.oce.administration.domain.model.community.MemberId;
-import org.bayaweaver.oce.administration.util.Iterables;
 
 import java.time.Clock;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Optional;
 import java.util.Set;
 
-public class ElectoralRegulation {
+public class ElectoralRegulation extends Observable implements Observer {
     private final Collection<Election> elections;
 
     public ElectoralRegulation() {
@@ -43,6 +45,27 @@ public class ElectoralRegulation {
                 .findFirst();
     }
 
+    @Override
+    public void notifyObservers(Object event) {
+        setChanged();
+        super.notifyObservers(event);
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if (arg instanceof CongregationDissolvedEvent event) {
+            handle(event);
+        }
+    }
+
+    private void handle(CongregationDissolvedEvent event) {
+        for (ElectoralRegulation.Election election : elections) {
+            if (election.initiator.equals(event.congregation())) {
+                election.close();
+            }
+        }
+    }
+
     public class Election {
         private final ElectionId id;
         private final Year year;
@@ -65,20 +88,13 @@ public class ElectoralRegulation {
             if (!this.electedMembers.isEmpty()) {
                 throw new IllegalArgumentException("Завершенные выборы не могут быть завершены повторно.");
             }
-            Community.Congregation congregation = Community.this.congregations.stream()
-                    .filter(c -> c.id.equals(congregationId))
-                    .findFirst()
-                    .orElse(null);
-            if (congregation == null || !congregation.equals(initiator)) {
+            if (!congregationId.equals(initiator)) {
                 throw new IllegalArgumentException("Завершить выборы может только та община, которая их инициировала.");
-            }
-            if (!Iterables.containsAll(congregation.members, electedMembers)) {
-                throw new IllegalArgumentException("На выборах, инициированных определенной общиной,"
-                        + " могут быть выбраны только члены этой общины.");
             }
             for (MemberId member : electedMembers) {
                 this.electedMembers.add(member);
             }
+            ElectoralRegulation.this.notifyObservers(new ElectionCompletedEvent(congregationId, electedMembers));
         }
 
         private void close() {
