@@ -1,9 +1,9 @@
 package org.bayaweaver.oce.administration.domain.model;
 
-abstract class Identifier {
+public abstract class Identifier {
     private final long value;
 
-    Identifier(long value) {
+    public Identifier(long value) {
         this.value = value;
     }
 

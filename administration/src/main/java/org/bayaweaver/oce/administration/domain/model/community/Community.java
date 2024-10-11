@@ -1,4 +1,6 @@
-package org.bayaweaver.oce.administration.domain.model;
+package org.bayaweaver.oce.administration.domain.model.community;
+
+import org.bayaweaver.oce.administration.domain.model.electoralregulation.ElectoralRegulation;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -34,7 +36,7 @@ public class Community {
         }
     }
 
-    class Congregation {
+    public class Congregation {
         private final CongregationId id;
         private final Set<MemberId> members;
 

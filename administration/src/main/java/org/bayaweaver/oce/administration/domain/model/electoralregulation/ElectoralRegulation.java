@@ -1,5 +1,8 @@
-package org.bayaweaver.oce.administration.domain.model;
+package org.bayaweaver.oce.administration.domain.model.electoralregulation;
 
+import org.bayaweaver.oce.administration.domain.model.community.Community;
+import org.bayaweaver.oce.administration.domain.model.community.CongregationId;
+import org.bayaweaver.oce.administration.domain.model.community.MemberId;
 import org.bayaweaver.oce.administration.util.Iterables;
 
 import java.time.Clock;
@@ -30,7 +33,7 @@ public class ElectoralRegulation {
 
             throw new IllegalArgumentException("Выборы могут быть инициированы общиной только один раз в год.");
         }
-        Election e = new Election(id, currentYear, congregation);
+        Election e = new Election(id, currentYear, congregationId);
         elections.add(e);
     }
 
@@ -43,11 +46,11 @@ public class ElectoralRegulation {
     public class Election {
         private final ElectionId id;
         private final Year year;
-        private final Community.Congregation initiator;
+        private final CongregationId initiator;
         private final Set<MemberId> electedMembers;
         private boolean closed;
 
-        private Election(ElectionId id, Year year, Community.Congregation initiator) {
+        private Election(ElectionId id, Year year, CongregationId initiator) {
             this.id = id;
             this.year = year;
             this.initiator = initiator;
@@ -62,7 +65,7 @@ public class ElectoralRegulation {
             if (!this.electedMembers.isEmpty()) {
                 throw new IllegalArgumentException("Завершенные выборы не могут быть завершены повторно.");
             }
-            Community.Congregation congregation = BoundedContext.this.congregations.stream()
+            Community.Congregation congregation = Community.this.congregations.stream()
                     .filter(c -> c.id.equals(congregationId))
                     .findFirst()
                     .orElse(null);
