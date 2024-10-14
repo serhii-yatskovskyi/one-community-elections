@@ -36,10 +36,10 @@ public class ElectoralRegulation {
                         "Выборы может инициировать только зарегистрированная община."));
         if (elections.stream()
                 .filter(e -> e.year.equals(currentYear))
-                .anyMatch(e -> e.initiator.equals(congregation))) {
+                .anyMatch(e -> e.initiator.equals(congregationId))) {
             throw new IllegalArgumentException("Выборы могут быть инициированы общиной только один раз в год.");
         }
-        Election e = new Election(id, currentYear, congregation, Instant.now(clock));
+        Election e = new Election(id, currentYear, congregationId, Instant.now(clock));
         elections.add(e);
     }
 
@@ -52,12 +52,12 @@ public class ElectoralRegulation {
     public class Election {
         private final ElectionId id;
         private final Year year;
-        private final Congregation initiator;
         private final Instant start;
+        private final CongregationId initiator;
         private final Set<MemberId> electedMembers;
         private boolean closed;
 
-        private Election(ElectionId id, Year year, Congregation initiator, Instant start) {
+        private Election(ElectionId id, Year year, CongregationId initiator, Instant start) {
             this.id = id;
             this.year = year;
             this.initiator = initiator;
@@ -82,7 +82,7 @@ public class ElectoralRegulation {
                     .filter(c -> c.id.equals(congregationId))
                     .findFirst()
                     .orElse(null);
-            if (congregation == null || !congregation.equals(initiator)) {
+            if (congregation == null || !congregationId.equals(initiator)) {
                 throw new IllegalArgumentException("Завершить выборы может только та община, которая их инициировала.");
             }
             if (!Iterables.containsAll(congregation.members, electedMembers)) {
