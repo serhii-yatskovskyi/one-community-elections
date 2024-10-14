@@ -11,10 +11,11 @@ import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Observable;
 import java.util.Optional;
 import java.util.Set;
 
-public class ElectoralRegulation {
+public class ElectoralRegulation extends Observable {
     private Duration minElectionDuration;
     private final Collection<Election> elections;
 
@@ -29,11 +30,6 @@ public class ElectoralRegulation {
 
     public void initiateElection(ElectionId id, CongregationId congregationId, Clock clock) {
         Year currentYear = Year.now(clock);
-        Congregation congregation = congregations.stream()
-                .filter(c -> c.id.equals(congregationId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Выборы может инициировать только зарегистрированная община."));
         if (elections.stream()
                 .filter(e -> e.year.equals(currentYear))
                 .anyMatch(e -> e.initiator.equals(congregationId))) {
@@ -41,12 +37,19 @@ public class ElectoralRegulation {
         }
         Election e = new Election(id, currentYear, congregationId, Instant.now(clock));
         elections.add(e);
+        notifyObservers(new ElectionInitiatedEvent(congregationId));
     }
 
     public Optional<Election> election(ElectionId id) {
         return elections.stream()
                 .filter(e -> e.id.equals(id))
                 .findFirst();
+    }
+
+    @Override
+    public void notifyObservers(Object event) {
+        setChanged();
+        super.notifyObservers(event);
     }
 
     public class Election {

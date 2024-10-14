@@ -1,9 +1,13 @@
 package org.bayaweaver.oce.administration.domain.model.community;
 
+import org.bayaweaver.oce.administration.domain.model.electoralregulation.ElectionInitiatedEvent;
+
 import java.util.HashSet;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
-public class Community {
+public class Community implements Observer {
     private final Set<Congregation> congregations;
 
     public Community() {
@@ -31,6 +35,23 @@ public class Community {
                 election.close();
             }
         }
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if (arg instanceof ElectionInitiatedEvent event) {
+            handle(event);
+        }
+    }
+
+    private void handle(ElectionInitiatedEvent event) {
+        CongregationId congregationId = event.initiator();
+        for (Congregation c : congregations) {
+            if (c.id.equals(congregationId)) {
+                return;
+            }
+        }
+        throw new IllegalArgumentException("Выборы может инициировать только зарегистрированная община.");
     }
 
     public class Congregation {
