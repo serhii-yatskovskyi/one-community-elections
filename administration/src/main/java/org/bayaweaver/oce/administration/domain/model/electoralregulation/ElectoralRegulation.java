@@ -59,7 +59,7 @@ public class ElectoralRegulation extends Observable implements Observer {
     }
 
     private void handle(CongregationDissolvedEvent event) {
-        for (ElectoralRegulation.Election election : elections) {
+        for (Election election : elections) {
             if (election.initiator.equals(event.congregation())) {
                 election.close();
             }

@@ -53,15 +53,16 @@ public class Community extends Observable implements Observer {
 
     private void handle(ElectionInitiatedEvent event) {
         CongregationId congregationId = event.initiator();
-        Community.Congregation congregation = congregations.stream()
-                .filter(c -> c.id.equals(congregationId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Выборы может инициировать только зарегистрированная община."));
+        for (Congregation c : congregations) {
+            if (c.id.equals(congregationId)) {
+                return;
+            }
+        }
+        throw new IllegalArgumentException("Выборы может инициировать только зарегистрированная община.");
     }
 
     private void handle(ElectionCompletedEvent event) {
-        Community.Congregation congregation = congregations.stream()
+        Congregation congregation = congregations.stream()
                 .filter(c -> c.id.equals(event.completedBy()))
                 .findFirst()
                 .orElse(null);
