@@ -1,5 +1,8 @@
 package org.bayaweaver.oce.administration.domain.model;
 
+import org.bayaweaver.oce.administration.domain.model.community.CongregationId;
+import org.bayaweaver.oce.administration.domain.model.community.MemberId;
+import org.bayaweaver.oce.administration.domain.model.electoralregulation.ElectionId;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;

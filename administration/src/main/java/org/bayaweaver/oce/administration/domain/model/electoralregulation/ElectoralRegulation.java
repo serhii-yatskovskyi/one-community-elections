@@ -1,5 +1,7 @@
-package org.bayaweaver.oce.administration.domain.model;
+package org.bayaweaver.oce.administration.domain.model.electoralregulation;
 
+import org.bayaweaver.oce.administration.domain.model.community.CongregationId;
+import org.bayaweaver.oce.administration.domain.model.community.MemberId;
 import org.bayaweaver.oce.administration.util.Iterables;
 
 import java.time.Clock;
@@ -12,15 +14,13 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class BoundedContext {
+public class ElectoralRegulation {
     private Duration minElectionDuration;
     private final Collection<Election> elections;
-    private final Set<Congregation> congregations;
 
-    public BoundedContext() {
+    public ElectoralRegulation() {
         this.minElectionDuration = Duration.ZERO;
         this.elections = new ArrayList<>();
-        this.congregations = new HashSet<>();
     }
 
     public void changeMinimalElectionDuration(Duration duration) {
@@ -41,29 +41,6 @@ public class BoundedContext {
         }
         Election e = new Election(id, currentYear, congregation, Instant.now(clock));
         elections.add(e);
-    }
-
-    public void registerCongregation(CongregationId id, Iterable<MemberId> members) {
-        Congregation congregation = new Congregation(id, members);
-        if (!congregations.add(congregation)) {
-            throw new IllegalArgumentException("Не может существовать нескольких общин с одинаковым идентификатором.");
-        }
-    }
-
-    public void dissolveCongregation(CongregationId id) {
-        Congregation congregation = congregations.stream()
-                .filter(c -> c.id.equals(id))
-                .findFirst()
-                .orElse(null);
-        if (congregation == null) {
-            return;
-        }
-        congregations.remove(congregation);
-        for (Election election : elections) {
-            if (election.initiator.equals(congregation)) {
-                election.close();
-            }
-        }
     }
 
     public Optional<Election> election(ElectionId id) {
@@ -130,36 +107,6 @@ public class BoundedContext {
                 return false;
             }
             Election that = (Election) o;
-            return id.equals(that.id);
-        }
-
-        @Override
-        public int hashCode() {
-            return id.hashCode();
-        }
-    }
-
-    public class Congregation {
-        private final CongregationId id;
-        private final Set<MemberId> members;
-
-        private Congregation(CongregationId id, Iterable<MemberId> members) {
-            this.id = id;
-            this.members = new HashSet<>();
-            for (MemberId member : members) {
-                this.members.add(member);
-            }
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            Congregation that = (Congregation) o;
             return id.equals(that.id);
         }
 
