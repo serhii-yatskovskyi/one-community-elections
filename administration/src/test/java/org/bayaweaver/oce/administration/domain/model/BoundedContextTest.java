@@ -3,8 +3,10 @@ package org.bayaweaver.oce.administration.domain.model;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -56,7 +58,7 @@ class BoundedContextTest {
         c.registerCongregation(congregationId, List.of(member1, member2));
         var electionId = new ElectionId(1);
         c.initiateElection(electionId, congregationId, Clock.systemUTC());
-        assertDoesNotThrow(() -> c.election(electionId).get().complete(congregationId, List.of(member1)));
+        assertDoesNotThrow(() -> c.election(electionId).get().complete(congregationId, List.of(member1), Clock.systemUTC()));
     }
 
     @Test
@@ -70,7 +72,7 @@ class BoundedContextTest {
         c.initiateElection(electionId, congregationId, Clock.systemUTC());
         assertThrows(
                 IllegalArgumentException.class,
-                () -> c.election(electionId).get().complete(congregationId, List.of(member2)));
+                () -> c.election(electionId).get().complete(congregationId, List.of(member2), Clock.systemUTC()));
     }
 
     @Test
@@ -82,10 +84,10 @@ class BoundedContextTest {
         c.registerCongregation(congregationId, List.of(member1, member2));
         var electionId = new ElectionId(1);
         c.initiateElection(electionId, congregationId, Clock.systemUTC());
-        c.election(electionId).get().complete(congregationId, List.of(member1));
+        c.election(electionId).get().complete(congregationId, List.of(member1), Clock.systemUTC());
         assertThrows(
                 IllegalArgumentException.class,
-                () -> c.election(electionId).get().complete(congregationId, List.of(member2)));
+                () -> c.election(electionId).get().complete(congregationId, List.of(member2), Clock.systemUTC()));
     }
 
     @Test
@@ -99,6 +101,22 @@ class BoundedContextTest {
         c.dissolveCongregation(congregationId);
         assertThrows(
                 IllegalArgumentException.class,
-                () -> c.election(electionId).get().complete(congregationId, List.of(member1)));
+                () -> c.election(electionId).get().complete(congregationId, List.of(member1), Clock.systemUTC()));
+    }
+
+    @Test
+    void setMinimalElectionDuration() {
+        var c = new BoundedContext();
+        final var congregationId = new CongregationId(100);
+        c.registerCongregation(congregationId, List.of());
+        c.changeMinimalElectionDuration(Duration.of(10, ChronoUnit.DAYS));
+        var time1 = Clock.fixed(Instant.parse("2021-01-01T00:00:00Z"), ZoneOffset.UTC);
+        var electionId = new ElectionId(1);
+        c.initiateElection(electionId, congregationId, time1);
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> c.election(electionId).get().complete(congregationId, List.of(), time1));
+        var time2 = Clock.fixed(Instant.parse("2021-01-11T00:00:00Z"), ZoneOffset.UTC);
+        assertDoesNotThrow(() -> c.election(electionId).get().complete(congregationId, List.of(), time2));
     }
 }

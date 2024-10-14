@@ -3,6 +3,8 @@ package org.bayaweaver.oce.administration.domain.model;
 import org.bayaweaver.oce.administration.util.Iterables;
 
 import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,12 +13,18 @@ import java.util.Optional;
 import java.util.Set;
 
 public class BoundedContext {
+    private Duration minElectionDuration;
     private final Collection<Election> elections;
     private final Set<Congregation> congregations;
 
     public BoundedContext() {
+        this.minElectionDuration = Duration.ZERO;
         this.elections = new ArrayList<>();
         this.congregations = new HashSet<>();
+    }
+
+    public void changeMinimalElectionDuration(Duration duration) {
+        this.minElectionDuration = duration;
     }
 
     public void initiateElection(ElectionId id, CongregationId congregationId, Clock clock) {
@@ -31,7 +39,7 @@ public class BoundedContext {
                 .anyMatch(e -> e.initiator.equals(congregation))) {
             throw new IllegalArgumentException("Выборы могут быть инициированы общиной только один раз в год.");
         }
-        Election e = new Election(id, currentYear, congregation);
+        Election e = new Election(id, currentYear, congregation, Instant.now(clock));
         elections.add(e);
     }
 
@@ -68,20 +76,27 @@ public class BoundedContext {
         private final ElectionId id;
         private final Year year;
         private final Congregation initiator;
+        private final Instant start;
         private final Set<MemberId> electedMembers;
         private boolean closed;
 
-        private Election(ElectionId id, Year year, Congregation initiator) {
+        private Election(ElectionId id, Year year, Congregation initiator, Instant start) {
             this.id = id;
             this.year = year;
             this.initiator = initiator;
+            this.start = start;
             this.electedMembers = new HashSet<>();
             this.closed = false;
         }
 
-        public void complete(CongregationId congregationId, Iterable<MemberId> electedMembers) {
+        public void complete(CongregationId congregationId, Iterable<MemberId> electedMembers, Clock clock) {
             if (closed) {
                 throw new IllegalArgumentException("Закрытые выборы не могут быть завершены.");
+            }
+            Instant now = Instant.now(clock);
+            if (start.plus(minElectionDuration).isAfter(now)) {
+                throw new IllegalArgumentException(
+                        "Выборы могут быть завершены не ранее, чем через установленное количество времени.");
             }
             if (!this.electedMembers.isEmpty()) {
                 throw new IllegalArgumentException("Завершенные выборы не могут быть завершены повторно.");
