@@ -1,6 +1,5 @@
 package org.bayaweaver.oce.administration.domain.model.electoralregulation;
 
-import org.bayaweaver.oce.administration.domain.model.community.Community;
 import org.bayaweaver.oce.administration.domain.model.community.CongregationDissolvedEvent;
 import org.bayaweaver.oce.administration.domain.model.community.CongregationId;
 import org.bayaweaver.oce.administration.domain.model.community.MemberId;
@@ -24,19 +23,15 @@ public class ElectoralRegulation extends Observable implements Observer {
 
     public void initiateElection(ElectionId id, CongregationId congregationId, Clock clock) {
         Year currentYear = Year.now(clock);
-        Community.Congregation congregation = congregations.stream()
-                .filter(c -> c.id.equals(congregationId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Выборы может инициировать только зарегистрированная община."));
         if (elections.stream()
                 .filter(e -> e.year.equals(currentYear))
-                .anyMatch(e -> e.initiator.equals(congregation))) {
+                .anyMatch(e -> e.initiator.equals(congregationId))) {
 
             throw new IllegalArgumentException("Выборы могут быть инициированы общиной только один раз в год.");
         }
         Election e = new Election(id, currentYear, congregationId);
         elections.add(e);
+        notifyObservers(new ElectionInitiatedEvent(congregationId));
     }
 
     public Optional<Election> election(ElectionId id) {

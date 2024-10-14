@@ -4,21 +4,21 @@ import org.bayaweaver.oce.administration.domain.model.community.Community;
 import org.bayaweaver.oce.administration.domain.model.community.CongregationId;
 import org.bayaweaver.oce.administration.domain.model.community.MemberId;
 import org.bayaweaver.oce.administration.domain.model.electoralregulation.ElectionId;
-import org.bayaweaver.oce.administration.domain.model.electoralregulation.ElectionRegulation;
+import org.bayaweaver.oce.administration.domain.model.electoralregulation.ElectoralRegulation;
 
 import java.time.Clock;
 
 public class Service {
     private final Clock clock;
-    private final ElectionRegulation electionRegulation;
+    private final ElectoralRegulation electoralRegulation;
     private final Community community;
 
     public Service() {
         clock = Clock.systemUTC();
-        electionRegulation = new ElectionRegulation();
+        electoralRegulation = new ElectoralRegulation();
         community = new Community();
-        electionRegulation.addObserver(community);
-        community.addObserver(electionRegulation);
+        electoralRegulation.addObserver(community);
+        community.addObserver(electoralRegulation);
     }
 
     public void registerCongregation(CongregationId congregationId, Iterable<MemberId> members) {
@@ -30,11 +30,11 @@ public class Service {
     }
 
     public void initiateElection(ElectionId electionId, CongregationId initiator) {
-        electionRegulation.initiateElection(electionId, initiator, clock);
+        electoralRegulation.initiateElection(electionId, initiator, clock);
     }
 
     public void completeElection(ElectionId electionId, CongregationId congregationId, Iterable<MemberId> electedMembers) {
-        ElectionRegulation.Election election = electionRegulation.election(electionId).orElseThrow();
+        ElectoralRegulation.Election election = electoralRegulation.election(electionId).orElseThrow();
         election.complete(congregationId, electedMembers);
     }
 }
