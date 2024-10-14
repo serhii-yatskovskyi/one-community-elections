@@ -42,6 +42,22 @@ public class BoundedContext {
         }
     }
 
+    public void dissolveCongregation(CongregationId id) {
+        Congregation congregation = congregations.stream()
+                .filter(c -> c.id.equals(id))
+                .findFirst()
+                .orElse(null);
+        if (congregation == null) {
+            return;
+        }
+        congregations.remove(congregation);
+        for (Election election : elections) {
+            if (election.initiator.equals(congregation)) {
+                election.close();
+            }
+        }
+    }
+
     public Optional<Election> election(ElectionId id) {
         return elections.stream()
                 .filter(e -> e.id.equals(id))
@@ -53,15 +69,20 @@ public class BoundedContext {
         private final Year year;
         private final Congregation initiator;
         private final Set<MemberId> electedMembers;
+        private boolean closed;
 
         private Election(ElectionId id, Year year, Congregation initiator) {
             this.id = id;
             this.year = year;
             this.initiator = initiator;
             this.electedMembers = new HashSet<>();
+            this.closed = false;
         }
 
         public void complete(CongregationId congregationId, Iterable<MemberId> electedMembers) {
+            if (closed) {
+                throw new IllegalArgumentException("Закрытые выборы не могут быть завершены.");
+            }
             if (!this.electedMembers.isEmpty()) {
                 throw new IllegalArgumentException("Завершенные выборы не могут быть завершены повторно.");
             }
@@ -79,6 +100,10 @@ public class BoundedContext {
             for (MemberId member : electedMembers) {
                 this.electedMembers.add(member);
             }
+        }
+
+        private void close() {
+            closed = true;
         }
 
         @Override
